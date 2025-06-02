@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing & Drone Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const Sidebar = ({ setCurrentFeature }) => {
+            const features = [
+                { id: 'upload', name: 'Image Upload & Display' },
+                { id: 'processing', name: 'Image Processing Operations' },
+                { id: 'grayscale', name: 'Grayscale Conversion' },
+                { id: 'histogram', name: 'Histogram Generation' },
+                { id: 'equalize', name: 'Histogram Equalization' },
+                { id: 'specify', name: 'Histogram Specification' },
+                { id: 'statistics', name: 'Image Statistics' },
+                { id: 'convolution', name: 'Convolution & Filtering' },
+                { id: 'face-detection', name: 'Face Detection & Noise' },
+                { id: 'contour', name: 'Contour & Shape Analysis' },
+                { id: 'compression', name: 'Image Compression' },
+                { id: 'color-space', name: 'Color Space Conversions' },
+                { id: 'texture', name: 'Texture Analysis' },
+                { id: 'gesture', name: 'Gesture Recognition' },
+                { id: 'drone', name: 'Drone Simulator' },
+            ];
+
+            return (
+                <div className="w-64 bg-gray-800 text-white h-screen p-4 fixed">
+                    <h2 className="text-xl font-bold mb-4">Features</h2>
+                    <ul>
+                        {features.map(feature => (
+                            <li key={feature.id} className="mb-2">
+                                <button
+                                    onClick={() => setCurrentFeature(feature.id)}
+                                    className="w-full text-left p-2 hover:bg-gray-700 rounded"
+                                >
+                                    {feature.name}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        };
+
+        const HomeScreen = () => (
+            <div className="ml-64 p-8">
+                <h1 className="text-3xl font-bold mb-4">Welcome to Image Processing & Drone Control</h1>
+                <p>Select a feature from the sidebar to get started.</p>
+            </div>
+        );
+
+        const ImageUpload = ({ image, setImage }) => {
+            const [preview, setPreview] = useState(null);
+            const [rgb, setRgb] = useState(null);
+
+            const handleUpload = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const response = await fetch('http://localhost:8000/upload/', {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const data = await response.json();
+                    setImage(data.image_path);
+                    setPreview(data.image_path);
+                    setRgb(data.rgb_array);
+                }
+            };
+
+            return (
+                <div className="ml-64 p-8">
+                    <h2 className="text-2xl font-bold mb-4">Image Upload & Display</h2>
+                    <input type="file" onChange={handleUpload} className="mb-4" />
+                    {preview && (
+                        <div>
+                            <img src={preview} alt="Uploaded" className="max-w-md mb-4" />
+                            {rgb && (
+                                <pre>{JSON.stringify(rgb, null, 2)}</pre>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [currentFeature, setCurrentFeature] = useState(null);
+            const [image, setImage] = useState(null);
+
+            const renderFeature = () => {
+                switch (currentFeature) {
+                    case 'upload':
+                        return <ImageUpload image={image} setImage={setImage} />;
+                    // Add other feature components here as needed
+                    default:
+                        return <HomeScreen />;
+                }
+            };
+
+            return (
+                <div className="flex">
+                    <Sidebar setCurrentFeature={setCurrentFeature} />
+                    {renderFeature()}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
